@@ -4,15 +4,16 @@
 The challenge requires creating a system that processes a file from a mounted directory. The file contains a list of debit and credit transactions for an account. The task is to create a function that reads this file, processes its content (where credit transactions are denoted with a plus sign, e.g., +60.5, and debit transactions with a minus sign, e.g., -20.46), and sends a summary of the transactions to a user via email. An example file is provided, but participants are expected to create their own file for the challenge.
 
 ## Objectives
-Save the user account data and its transactions.
-The transactions must be processed by reading a CSV file located in a mounted directory.
-The user should receive an email with a summary of their transactions divided by periods.
+
+- Save the user account data and its transactions.
+- The transactions must be processed by reading a CSV file located in a mounted directory.
+- The user should receive an email with a summary of their transactions divided by periods.
 
 ## Decisions
 
-Although opting for a schema where transactions are simply stored in a relational database might seem like the simplest decision, it is not the correct one from a scalable perspective. Delegating the generation of summaries to the database is a scenario that lacks scalability. Even in the realm of Business Intelligence (BI), thorough data cleaning is essential to ease the process.
+Opting for a schema where transactions are simply stored in a relational database might seem like the simplest decision, but it is not the correct one from a scalable perspective. Delegating the generation of summaries to the database is a scenario that lacks scalability. Even in the realm of Business Intelligence (BI), thorough data cleaning is essential to ease the process.
 
-In a scenario where all transactions are recorded, the size of the database can grow to a level that incurs costly expenses when running queries. Consequently, even a simple query for a bakery, for instance, becomes a significant challenge in terms of performance and efficiency. It is essential to consider solutions that address this complexity and enable smooth and effective data management
+In a scenario where all transactions are recorded, the size of the database can grow to a level that incurs costly expenses when running queries. Consequently, even a simple query for a bakery, for instance, becomes a significant challenge in terms of performance and efficiency. It is essential to consider solutions that address this complexity and enable smooth and effective data management.
 ``
 SELECT
 s.period,
@@ -28,30 +29,26 @@ s.period = ?
 GROUP BY
 s.period;
 ``
-Incurring a high computational cost if the table is large.
+This incurs a high computational cost if the table is large.
 
-Given all the aforementioned points, a proper design for this problem should be based on event sourcing, where each event is stored in a database (event store) and projections are generated:
-For this exercise, there should be two projections: one for the account, where the current account balance is maintained, and another for the summary, where debits and credits are incremented within a given period.
+Given all the aforementioned points, a proper design for this problem should be based on event sourcing, where each event is stored in a database (event store) and projections are generated. For this exercise, there should be two projections: one for the account, where the current account balance is maintained, and another for the summary, where debits and credits are incremented within a given period.
 
 By using an event sourcing schema, the following advantages are gained:
+
 
 - Decoupling of Components: The update of the account and the summary are not related. Decoupling these different APIs would be straightforward.
 - Fault Recovery: In case of a failure, it is possible to reprocess events from a known point.
 - Audit Trail: All generated events are stored in the event store. Searching for a specific event would be easy since the account_id is the aggregate_id of the event.
 
-This project was built using RestFul api and Event Sourcing architecture, implementing in Go programming language.
-The API utilizes Event Sourcing principles con CQRS, where events are stored in a MongoDB event store with two projections in MySQL (account and summary)
-Additionally, CSV files are saved into a mount directory managed by  minio object store.
-It has an email server where account summaries will be sent. The entire project is containerized using Docker Compose.
+- This project was built using a RESTful API and Event Sourcing architecture, implemented in the Go programming language. The API utilizes Event Sourcing principles with CQRS, where events are stored in a MongoDB event store with two projections in MySQL (account and summary). Additionally, CSV files are saved into a mounted directory managed by the Minio object store. It has an email server where account summaries will be sent. The entire project is containerized using Docker Compose.
 
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
 
-## installation
+## Installation
 
 This project uses Docker Compose for easy setup and deployment. Make sure you have Docker and Docker Compose installed on your system. Follow these steps to get started:
-
 1. Clone the repository:
 ```bash
    git clone https://github.com/castiglionimax/process-csv.git
@@ -69,7 +66,7 @@ docker-compose up --build
    ```
 ## Usage
 
-To test the application, you can utilize Postman or a similar tool. Below are the curl commands:
+To test the application, you can use Postman or a similar tool. Below are the curl commands:
 
 To create a new account:
 ```sh
@@ -80,20 +77,20 @@ curl --location --request POST 'http://127.0.0.1:8080/accounts' \
     "email": "juan@domain-poc.com"
 }'
 `````
-With the account ID obtained, make a csv file. There are three form to do it:
+With the account ID obtained, create a CSV file. There are three ways to do it:
 
-- Using minio portal, the user and password are located into the docker-compose file.
-url: http://127.0.0.1:9001/login
-- usr: root
-- pss: Strong#password2023
+- Using the Minio portal, the username and password are located in the docker-compose file.
+URL: http://127.0.0.1:9001/login
 
-go to object browser -> transactions -> Upload
-
-a csv example is located into the folder csv.
+    - Username: root
+  - Password: Strong#password2023
+  
+  Go to the object browser -> transactions -> Upload.
+  An example CSV file is located in the "csv" folder.
 
 [csv](./csv/)
 
-- Send a post request and adding a json payload
+-Send a POST request and add a JSON payload:
 
 
 ```sh
@@ -136,9 +133,9 @@ Finally, to get a summary report by email
 ```sh
 curl --location --request POST 'http://127.0.0.1:8080/accounts/ceb7d9ca-36ff-42c7-b394-826498a847f5/summary/email?start=2023-07-01&end=2023-08-01'
 ```
-NOTE: dates are optional, if those aren't input, the user will receive a summary with two months old. 
+NOTE: Dates are optional; if not input, the user will receive a summary from two months ago.
 
-In order to see the email sent, go to http://127.0.0.1:3000/ what is a smtp server fake, only for developing propose.
+To see the sent email, go to http://127.0.0.1:3000/. This is a fake SMTP server, only for development purposes.
 
 To stop the project containers, you can run:
 ```bash

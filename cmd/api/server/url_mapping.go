@@ -28,6 +28,8 @@ func (m mapping) mapUrlsToControllers(route *chi.Mux) {
 
 	route.Post("/csv/process", m.controller.ProcessFiles)
 
+	route.Post("/accounts/{id}/summary/email", m.controller.AccountSummary)
+
 }
 
 func alive() func(w http.ResponseWriter, r *http.Request) {

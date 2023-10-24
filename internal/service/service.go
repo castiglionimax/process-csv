@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/castiglionimax/process-csv/internal/domain"
 )
@@ -15,6 +16,8 @@ type (
 		SaveTransactionsInDirectory(ctx context.Context, transactions []domain.Transaction) error
 		GetTransactionFromDirectory(ctx context.Context) ([]domain.Transaction, error)
 		DeleteTransactionsInDirectory(ctx context.Context) error
+
+		SendEmail(ctx context.Context, accountID domain.AccountID, start, end time.Time) error
 	}
 
 	Service struct {
@@ -48,4 +51,8 @@ func (s Service) ProcessFiles(ctx context.Context) error {
 	}
 	//	return s.repository.DeleteTransactionsInDirectory(ctx)
 	return nil
+}
+
+func (s Service) SendEmail(ctx context.Context, accountID domain.AccountID, start, end time.Time) error {
+	return s.repository.SendEmail(ctx, accountID, start, end)
 }

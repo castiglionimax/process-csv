@@ -1,6 +1,17 @@
 version: '3.8'
-
 services:
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      - "3000:80"
+      - "25:25"
+      - "143:143"
+    environment:
+      ServerOptions__HostName: smtp4dev
+      ServerOptions__TlsMode: ImplicitTls
+    volumes:
+      - smtp4dev-data:/smtp4dev
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     hostname: zookeeper
@@ -83,7 +94,9 @@ services:
       - mysql
       - zookeeper
       - minio
+      - smtp4dev
 
 volumes:
   mongodb_data:
   volume_files:
+  smtp4dev-data:

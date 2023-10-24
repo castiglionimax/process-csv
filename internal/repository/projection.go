@@ -16,8 +16,8 @@ type (
 )
 
 const (
-	insertAccount       = "INSERT INTO accounts (id, name, amount, number, last_updated) VALUES (?,?, ?, ?,?)"
-	UpdateAccountAmount = "UPDATE accounts SET amount = amount + ? WHERE id = ?;"
+	insertAccount       = "INSERT INTO accounts (id, name, email, amount, last_updated) VALUES (?, ?, ?, ?,?)"
+	UpdateAccountAmount = "UPDATE accounts SET amount = amount + ?, last_updated= ? WHERE id = ?;"
 
 	updateSummary = "INSERT INTO summaries (account_id, period, credit, credit_qty, debit, debit_qty,last_updated) VALUES (?, ?, ?, ?,?,?,?) ON DUPLICATE KEY UPDATE credit = credit + VALUES(credit), credit_qty = credit_qty + VALUES(credit_qty), debit = debit + VALUES(debit), debit_qty = debit_qty + VALUES(debit_qty), last_updated =  VALUES(last_updated);"
 )
@@ -32,7 +32,7 @@ func (p ProjectionAccount) CreateAccount(ctx context.Context, account domain.Acc
 		return err
 	}
 
-	_, err = insertStatement.Exec(account.ID, account.Name, 0, account.Number, time.Now().UTC())
+	_, err = insertStatement.Exec(account.ID, account.Name, account.Email, 0, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (p ProjectionAccount) RegisterTransaction(ctx context.Context, tx domain.Tr
 	if err != nil {
 		return err
 	}
-	_, err = insertStatement.Exec(tx.Amount, tx.AccountID)
+	_, err = insertStatement.Exec(tx.Amount, tx.AccountID, time.Now().UTC())
 	if err != nil {
 		return err
 	}

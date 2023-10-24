@@ -7,13 +7,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/castiglionimax/process-csv/internal/domain"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
+	"github.com/harranali/mailing"
 	"github.com/minio/minio-go/v7"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
-
-	"github.com/castiglionimax/process-csv/internal/domain"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type (
@@ -27,11 +27,12 @@ type (
 		topic    string
 		mysql    *sql.DB
 		minio    *minio.Client
+		mailer   *mailing.Mailer
 	}
 )
 
-func NewRepository(producer *kafka.Producer, topic string, mongo *mongo.Client, mysql *sql.DB, minio *minio.Client) *Repository {
-	return &Repository{producer: producer, topic: topic, mongo: mongo, mysql: mysql, minio: minio}
+func NewRepository(producer *kafka.Producer, topic string, mongo *mongo.Client, mysql *sql.DB, minio *minio.Client, mailer *mailing.Mailer) *Repository {
+	return &Repository{producer: producer, topic: topic, mongo: mongo, mysql: mysql, minio: minio, mailer: mailer}
 }
 
 const (

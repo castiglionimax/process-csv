@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
+	"github.com/harranali/mailing"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
@@ -32,7 +34,7 @@ func resolverService() *service.Service {
 			"EventQueue",
 			resolveEventStore(),
 			resolverRelationDatabase(),
-			resolverObjectStorage()))
+			resolverObjectStorage(), resolverSmtpServer()))
 	return srv
 }
 
@@ -127,4 +129,18 @@ func resolverObjectStorage() *minio.Client {
 		log.Printf("Successfully created %s\n", bucketName)
 	}
 	return minioClient
+}
+
+func resolverSmtpServer() *mailing.Mailer {
+	return mailing.NewMailerWithSMTP(&mailing.SMTPConfig{
+		Host:     "smtp4dev",
+		Port:     25,
+		Username: "",
+		Password: "",
+		TLSConfig: tls.Config{
+			ServerName:         "smtp4dev",
+			InsecureSkipVerify: true,
+		},
+	})
+
 }

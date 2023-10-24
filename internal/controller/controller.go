@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"io"
 	"net/http"
@@ -21,6 +22,8 @@ type (
 		CreateAccount(ctx context.Context, account domain.Account) (domain.AccountID, error)
 		SaveTransactions(ctx context.Context, transactions []domain.Transaction) error
 		ProcessFiles(ctx context.Context) error
+
+		SendEmail(ctx context.Context, accountID domain.AccountID, start, end time.Time) error
 	}
 
 	Controller struct {
@@ -59,6 +62,50 @@ func (c Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, account)
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (c Controller) AccountSummary(w http.ResponseWriter, r *http.Request) {
+	accountID := chi.URLParam(r, "id")
+	if accountID == "" {
+		http.Error(w, "id null", http.StatusBadRequest)
+		return
+	}
+	var (
+		startDate, endDate time.Time
+		err                error
+	)
+
+	startAt := r.URL.Query().Get("start")
+	if startAt != "" {
+		startDate, err = time.Parse("2006-01-02", startAt)
+		if err != nil {
+			http.Error(w, "bad start date", http.StatusBadRequest)
+			return
+		}
+	} else {
+		startDate = time.Now().UTC().AddDate(0, -2, 0)
+	}
+
+	end := r.URL.Query().Get("end")
+	if end == "" {
+		endDate, err = time.Parse("2006-01-02", startAt)
+		if err != nil {
+			http.Error(w, "bad start date", http.StatusBadRequest)
+			return
+		}
+	} else {
+		endDate = time.Now().UTC()
+	}
+
+	if err := c.service.SendEmail(r.Context(), domain.AccountID(accountID), startDate, endDate); err != nil {
+		if errors.As(err, &pkgError.HandlerError{}) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (c Controller) UploadHandler(w http.ResponseWriter, r *http.Request) {
