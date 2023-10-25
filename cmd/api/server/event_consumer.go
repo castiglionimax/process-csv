@@ -77,8 +77,8 @@ func (c eventConsumer) HandlerAccount() {
 				err = retry(func() error {
 					return c.EventHandler.SaveAccount(context.TODO(), req)
 				})
-
 			case saveCredit, saveDebit:
+				log.Printf("paso por aca")
 				req, _ := json.Marshal(body.Data)
 				err = retry(func() error {
 					return c.EventHandler.RegisterTransaction(context.TODO(), req)

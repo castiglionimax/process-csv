@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"time"
 
 	"github.com/castiglionimax/process-csv/internal/domain"
@@ -32,7 +33,7 @@ func (p ProjectionAccount) CreateAccount(ctx context.Context, account domain.Acc
 		return err
 	}
 
-	_, err = insertStatement.Exec(account.ID, account.Name, account.Email, 0, time.Now().UTC())
+	_, err = insertStatement.ExecContext(ctx, account.ID, account.Name, account.Email, 0, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -44,8 +45,15 @@ func (p ProjectionAccount) RegisterTransaction(ctx context.Context, tx domain.Tr
 	if err != nil {
 		return err
 	}
-	_, err = insertStatement.Exec(tx.Amount, tx.AccountID, time.Now().UTC())
+	_, err = insertStatement.ExecContext(ctx, tx.Amount, time.Now().UTC(), tx.AccountID)
 	if err != nil {
+		mysqlErr, ok := err.(*mysql.MySQLError)
+		if !ok {
+			return err
+		}
+		if mysqlErr.Number == 1062 {
+			return nil
+		}
 		return err
 	}
 	return nil
@@ -61,9 +69,9 @@ func (p ProjectionAccount) RegisterSummary(ctx context.Context, tx domain.Transa
 		return fmt.Sprintf("%d %s", year, month)
 	}
 	if tx.Amount > 0 {
-		_, err = insertStatement.Exec(tx.AccountID, f(tx.Date), tx.Amount, 1, 0, 0, time.Now().UTC())
+		_, err = insertStatement.ExecContext(ctx, tx.AccountID, f(tx.Date), tx.Amount, 1, 0, 0, time.Now().UTC())
 	} else {
-		_, err = insertStatement.Exec(tx.AccountID, f(tx.Date), 0, 0, tx.Amount, 1, time.Now().UTC())
+		_, err = insertStatement.ExecContext(ctx, tx.AccountID, f(tx.Date), 0, 0, tx.Amount, 1, time.Now().UTC())
 	}
 	return err
 }

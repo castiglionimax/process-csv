@@ -54,10 +54,10 @@ func resolverQueueProducer() *kafka.Producer {
 func resolverQueueConsumer(groupId string) *kafka.Consumer {
 	uri := os.Getenv("KAFKA_URI")
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":  uri,
-		"group.id":           groupId,
-		"auto.offset.reset":  "earliest",
-		"enable.auto.commit": "false",
+		"bootstrap.servers": uri,
+		"group.id":          groupId,
+		"acks":              "all",
+		"auto.offset.reset": "earliest",
 	})
 
 	if err != nil {
@@ -142,5 +142,4 @@ func resolverSmtpServer() *mailing.Mailer {
 			InsecureSkipVerify: true,
 		},
 	})
-
 }

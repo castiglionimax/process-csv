@@ -49,8 +49,7 @@ func (s Service) ProcessFiles(ctx context.Context) error {
 	if err = s.repository.SaveTransactions(ctx, tx); err != nil {
 		return err
 	}
-	//	return s.repository.DeleteTransactionsInDirectory(ctx)
-	return nil
+	return s.repository.DeleteTransactionsInDirectory(ctx)
 }
 
 func (s Service) SendEmail(ctx context.Context, accountID domain.AccountID, start, end time.Time) error {

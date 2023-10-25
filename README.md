@@ -133,7 +133,7 @@ Finally, to get a summary report by email
 ```sh
 curl --location --request POST 'http://127.0.0.1:8080/accounts/ceb7d9ca-36ff-42c7-b394-826498a847f5/summary/email?start=2023-07-01&end=2023-08-01'
 ```
-NOTE: Dates are optional; if not input, the user will receive a summary from two months ago.
+NOTE: Dates are optional; if not input, the user will receive from the two previous months.
 
 To see the sent email, go to http://127.0.0.1:3000/. This is a fake SMTP server, only for development purposes.
 
