@@ -98,12 +98,12 @@ curl --location --request POST 'http://127.0.0.1:8080/csv' \
 --header 'Content-Type: application/json' \
 --data-raw '[
   {
-    "account_id": "ceb7d9ca-36ff-42c7-b394-826498a847f5",
+    "account_id": {account_id},<---- with the account_id received
     "timestamp": 1634627622,
     "amount": "+9.0"
   },
     {
-    "account_id": "ceb7d9ca-36ff-42c7-b394-826498a847f5",
+    "account_id": {account_id},<----with the account_id received
     "timestamp": 1636214203,
     "amount": "-96.5"
   }
