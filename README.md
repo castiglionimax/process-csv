@@ -128,6 +128,9 @@ To obtain process the files sent.
 ```sh
 curl --location --request POST 'http://127.0.0.1:8080/csv/process'
 ```
+> [!WARNING]
+> Once the file has been processed, it will be deleted."
+
 
 Finally, to get a summary report by email
 ```sh
